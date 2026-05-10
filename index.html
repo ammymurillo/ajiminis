@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ajiminis — Tienda de Ropa</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --rose:#f472b6;--rose-light:#fce7f3;--rose-mid:#fbcfe8;--rose-deep:#db2777;
+  --black:#0f0f0f;--charcoal:#1a1a1a;--gray-soft:#f9f0f5;--text-muted:#6b4c5e;--white:#ffffff;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--black);min-height:100vh}
+
+nav{background:var(--black);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--rose);letter-spacing:2px;font-style:italic;text-decoration:none}
+.nav-links{display:flex;gap:1.8rem;list-style:none}
+.nav-links a{color:#c4a0b5;text-decoration:none;font-size:0.82rem;letter-spacing:0.5px;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--rose)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.admin-badge{background:rgba(244,114,182,.15);color:var(--rose);font-size:.72rem;padding:4px 10px;border-radius:999px;font-weight:600;display:none}
+.logout-btn{background:transparent;border:1px solid #333;color:#888;font-size:.72rem;padding:5px 12px;border-radius:999px;cursor:pointer;display:none;transition:all .2s;font-family:inherit}
+.logout-btn:hover{border-color:var(--rose);color:var(--rose)}
+.wa-nav-btn{background:var(--rose);color:white;border:none;font-size:.78rem;padding:8px 16px;border-radius:999px;font-weight:500;cursor:pointer;transition:background .2s;font-family:inherit}
+.wa-nav-btn:hover{background:var(--rose-deep)}
+.admin-trigger{background:transparent;border:none;color:#333;font-size:.85rem;cursor:pointer;padding:6px;border-radius:6px;transition:color .2s}
+.admin-trigger:hover{color:#777}
+#nav-admin-li{display:none}
+
+.banner{background:var(--rose);color:white;text-align:center;padding:9px;font-size:.79rem;letter-spacing:1px}
+
+.hero{background:var(--black);color:white;padding:5rem 2rem 4.5rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(244,114,182,.12) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;pointer-events:none}
+.hero::after{content:'';position:absolute;width:350px;height:350px;background:radial-gradient(circle,rgba(244,114,182,.08) 0%,transparent 70%);bottom:-80px;left:-80px;border-radius:50%;pointer-events:none}
+.hero-eye{font-size:.74rem;letter-spacing:4px;text-transform:uppercase;color:var(--rose);margin-bottom:.9rem}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,5vw,4.2rem);font-style:italic;line-height:1.1;margin-bottom:1.1rem}
+.hero-title span{color:var(--rose)}
+.hero-sub{color:#c4a0b5;font-size:.93rem;max-width:460px;margin:0 auto 2rem;line-height:1.75}
+.hero-cta{background:var(--rose);color:white;border:none;padding:13px 34px;border-radius:999px;font-size:.88rem;font-weight:500;cursor:pointer;transition:background .2s,transform .15s;margin-right:10px;font-family:inherit}
+.hero-cta:hover{background:var(--rose-deep);transform:translateY(-1px)}
+.hero-ghost{background:transparent;color:#c4a0b5;border:1px solid #c4a0b5;padding:13px 34px;border-radius:999px;font-size:.88rem;cursor:pointer;transition:all .2s;font-family:inherit}
+.hero-ghost:hover{color:var(--rose);border-color:var(--rose)}
+
+.section-wrap{padding:2.8rem 2rem 2rem;background:var(--gray-soft)}
+.sec-label{display:flex;align-items:center;gap:10px;margin-bottom:1.6rem}
+.sec-label h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700}
+.pill{background:var(--rose);color:white;font-size:.7rem;padding:3px 10px;border-radius:999px;font-weight:500}
+
+.loading{text-align:center;padding:3rem;color:var(--text-muted);font-size:.9rem}
+.spinner{width:36px;height:36px;border:3px solid var(--rose-mid);border-top-color:var(--rose);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{text-align:center;padding:2rem;color:#c0392b;font-size:.88rem;background:white;border-radius:12px;margin:1rem 0;border:1px solid #fcc}
+
+.cw{position:relative}
+.ctrack{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding-bottom:1rem;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.ctrack::-webkit-scrollbar{display:none}
+.cbtn{position:absolute;top:50%;transform:translateY(-60%);background:var(--black);color:white;border:none;width:38px;height:38px;border-radius:50%;font-size:1.1rem;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;transition:background .2s;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.cbtn:hover{background:var(--rose-deep)}
+.cbtn.L{left:-14px}.cbtn.R{right:-14px}
+
+.pcard{flex:0 0 230px;scroll-snap-align:start;background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 18px rgba(0,0,0,.07);cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(244,114,182,.2)}
+.pbadge{position:absolute;top:10px;left:10px;background:var(--rose);color:white;font-size:.67rem;font-weight:600;padding:3px 10px;border-radius:999px;z-index:2}
+.pbadge.used{background:var(--black)}
+.pph{width:100%;height:200px;background:linear-gradient(145deg,var(--rose-light),var(--rose-mid));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:var(--rose-deep);font-size:.74rem;font-weight:500}
+.pph-emoji{font-size:2.5rem}
+.pcard-img{width:100%;height:200px;object-fit:cover;display:block}
+.pbody{padding:.9rem}
+.ptitle{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:3px}
+.pmeta{font-size:.74rem;color:var(--text-muted);margin-bottom:7px}
+.pprice{font-size:1.15rem;font-weight:700;color:var(--rose-deep);margin-bottom:9px}
+.pbtn{width:100%;background:var(--black);color:white;border:none;padding:9px;border-radius:9px;font-size:.8rem;font-weight:500;cursor:pointer;transition:background .2s;font-family:inherit}
+.pbtn:hover{background:var(--rose-deep)}
+.pdel{width:100%;background:transparent;color:#e55;border:1px solid #e55;padding:7px;border-radius:9px;font-size:.74rem;cursor:pointer;margin-top:5px;display:none;transition:all .2s;font-family:inherit}
+.pdel:hover{background:#e55;color:white}
+
+.admin-panel{display:none;background:white;border-top:3px solid var(--rose)}
+.admin-topbar{background:linear-gradient(135deg,var(--rose-deep),var(--rose));padding:1rem 2rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.admin-topbar h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:white;font-style:italic}
+.admin-topbar span{font-size:.74rem;color:rgba(255,255,255,.85);background:rgba(0,0,0,.15);padding:3px 12px;border-radius:999px}
+.reload-btn{background:rgba(255,255,255,.2);color:white;border:none;padding:6px 16px;border-radius:999px;font-size:.76rem;cursor:pointer;font-family:inherit;transition:background .2s;margin-left:auto}
+.reload-btn:hover{background:rgba(255,255,255,.35)}
+.admin-body{padding:2rem}
+.admin-note{background:var(--rose-light);border:1px solid var(--rose-mid);border-radius:12px;padding:1.1rem 1.3rem;font-size:.83rem;color:var(--text-muted);line-height:1.7;margin-bottom:1.5rem;max-width:580px;margin-left:auto;margin-right:auto}
+.admin-note strong{color:var(--rose-deep)}
+.admin-note code{background:white;border:1px solid var(--rose-mid);padding:1px 6px;border-radius:4px;font-size:.78rem;color:var(--rose-deep)}
+.sheets-link{display:inline-flex;align-items:center;gap:6px;background:var(--rose);color:white;text-decoration:none;padding:9px 20px;border-radius:999px;font-size:.82rem;font-weight:500;transition:background .2s;margin-top:.7rem}
+.sheets-link:hover{background:var(--rose-deep)}
+
+.wa-bar{background:var(--gray-soft);border-top:1px solid var(--rose-mid);padding:1rem 2rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wa-bar label{font-size:.75rem;color:var(--text-muted);font-weight:500}
+.wa-bar input{background:white;border:1.5px solid var(--rose-mid);color:var(--black);border-radius:8px;padding:7px 12px;font-size:.82rem;font-family:inherit;outline:none;width:210px;transition:border-color .2s}
+.wa-bar input:focus{border-color:var(--rose)}
+.wa-save-btn{background:var(--rose);color:white;border:none;padding:7px 16px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
+.wa-save-btn:hover{background:var(--rose-deep)}
+#wa-saved{font-size:.74rem;color:var(--rose-deep);display:none}
+
+.pay-sec{background:var(--black);color:white;padding:3rem 2rem;text-align:center}
+.pay-sec h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--rose);font-style:italic;margin-bottom:.4rem}
+.pay-sec p{color:#c4a0b5;font-size:.86rem;margin-bottom:1.8rem;line-height:1.7}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem;max-width:660px;margin:0 auto}
+.pcard2{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:13px;padding:1.1rem;text-align:left;transition:border-color .2s}
+.pcard2:hover{border-color:var(--rose)}
+.pcard2 .ic{font-size:1.4rem;margin-bottom:.45rem}
+.pcard2 h4{font-size:.84rem;font-weight:600;margin-bottom:.2rem}
+.pcard2 p{font-size:.74rem;color:#888;line-height:1.4;margin:0}
+
+footer{background:#0a0a0a;color:#555;text-align:center;padding:1.4rem;font-size:.77rem;border-top:1px solid #1a1a1a}
+footer span{color:var(--rose)}
+
+.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;align-items:center;justify-content:center;padding:1.5rem}
+.modal-wrap.open{display:flex}
+.modal{background:white;border-radius:20px;width:100%;max-width:440px;overflow:hidden;position:relative;max-height:92vh;overflow-y:auto}
+.m-imgarea{width:100%;height:250px;background:linear-gradient(145deg,var(--rose-light),var(--rose-mid));display:flex;align-items:center;justify-content:center;font-size:4.5rem;flex-shrink:0}
+.m-imgarea img{width:100%;height:250px;object-fit:cover}
+.mbody{padding:1.4rem}
+.mbody h2{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:.3rem}
+.mprice{font-size:1.3rem;font-weight:700;color:var(--rose-deep);margin-bottom:.9rem}
+.drow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--rose-light);font-size:.84rem}
+.dlbl{color:var(--text-muted)}.dval{font-weight:500}
+.mdesc{font-size:.83rem;color:var(--text-muted);line-height:1.65;margin:.9rem 0}
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#25D366;color:white;border:none;padding:13px;border-radius:12px;font-size:.9rem;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s;margin-top:.8rem;font-family:inherit}
+.wa-btn:hover{background:#1ebe5d}
+.mclose{position:absolute;top:12px;right:14px;background:rgba(0,0,0,.45);color:white;border:none;width:31px;height:31px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
+
+.login-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;align-items:center;justify-content:center;padding:1.5rem}
+.login-overlay.open{display:flex}
+.login-box{background:white;border-radius:20px;width:100%;max-width:320px;padding:2.2rem;text-align:center}
+.login-box h3{font-family:'Playfair Display',serif;font-size:1.35rem;margin-bottom:.3rem}
+.login-box p{font-size:.79rem;color:var(--text-muted);margin-bottom:1.5rem}
+.login-box input{width:100%;background:var(--gray-soft);border:1.5px solid var(--rose-mid);border-radius:10px;padding:10px 13px;font-size:.88rem;font-family:'DM Sans',sans-serif;color:var(--black);outline:none;margin-bottom:.65rem;transition:border-color .2s;display:block}
+.login-box input:focus{border-color:var(--rose)}
+.login-submit{width:100%;background:var(--rose);color:white;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .2s;font-family:inherit}
+.login-submit:hover{background:var(--rose-deep)}
+.login-err{font-size:.75rem;color:#e44;margin-top:.5rem;margin-bottom:.5rem;display:none}
+.login-cancel{background:transparent;border:none;font-size:.76rem;color:#aaa;cursor:pointer;margin-top:.7rem;display:block;width:100%;font-family:inherit}
+.login-cancel:hover{color:var(--text-muted)}
+
+@media(max-width:600px){
+  nav{padding:0 1rem}
+  .nav-links{display:none}
+  .hero{padding:3.5rem 1.2rem 3rem}
+  .hero-ghost{display:none}
+  .section-wrap{padding:2rem 1rem 1.5rem}
+  .pcard{flex:0 0 200px}
+  .admin-body{padding:1.2rem}
+  .pay-sec{padding:2.2rem 1rem}
+  .wa-bar{padding:.8rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">Ajiminis</a>
+  <ul class="nav-links">
+    <li><a href="#catalogo">Catálogo</a></li>
+    <li><a href="#pago">Cómo pagar</a></li>
+    <li id="nav-admin-li"><a href="#admin-panel" style="color:var(--rose)">⚙ Admin</a></li>
+  </ul>
+  <div class="nav-right">
+    <span class="admin-badge" id="admin-badge">🔑 Admin</span>
+    <button class="logout-btn" id="logout-btn" onclick="logout()">Salir de admin</button>
+    <button class="wa-nav-btn" onclick="openWA('Hola Ajiminis! 🌸 Me interesa ver el catálogo')">Contactar</button>
+    <button class="admin-trigger" id="admin-trigger" onclick="openLogin()" title="Acceso admin">⚙</button>
+  </div>
+</nav>
+
+<div class="banner">✦ Envíos disponibles &nbsp;|&nbsp; Prendas únicas &nbsp;|&nbsp; ¡Escríbeme por WhatsApp! ✦</div>
+
+<div class="hero">
+  <p class="hero-eye">Moda femenina • Prendas únicas</p>
+  <h1 class="hero-title">Tu estilo,<br><span>tu esencia</span></h1>
+  <p class="hero-sub">Prendas seleccionadas con amor para ti. Cada pieza cuenta una historia. Encuentra la tuya.</p>
+  <button class="hero-cta" onclick="document.getElementById('catalogo').scrollIntoView({behavior:'smooth'})">Ver catálogo</button>
+  <button class="hero-ghost" onclick="openWA('Hola Ajiminis! 🌸 Me interesa conocer más')">Escribir por WhatsApp</button>
+</div>
+
+<section class="section-wrap" id="catalogo">
+  <div class="sec-label">
+    <h2>Catálogo</h2>
+    <span class="pill" id="count-pill">Cargando...</span>
+  </div>
+  <div id="catalog-content">
+    <div class="loading"><div class="spinner"></div>Cargando prendas...</div>
+  </div>
+</section>
+
+<div id="admin-panel">
+  <div class="admin-panel" id="admin-form-wrap">
+    <div class="admin-topbar">
+      <h3>Panel de administración</h3>
+      <span>Solo tú puedes ver esto 🔑</span>
+      <button class="reload-btn" onclick="loadProducts()">↻ Recargar prendas</button>
+    </div>
+    <div class="admin-body">
+      <div class="admin-note">
+        <strong>¿Cómo agregar prendas?</strong><br>
+        Todo se maneja desde tu Google Sheets. Agrega una fila nueva con los datos de la prenda y presiona <em>"↻ Recargar prendas"</em> para verla aparecer aquí.<br><br>
+        Las columnas deben llamarse exactamente: <code>titulo</code>, <code>precio</code>, <code>color</code>, <code>talla</code>, <code>condicion</code>, <code>detalles</code>, <code>badge</code>, <code>foto</code><br><br>
+        Para las fotos: sube la imagen a <strong>Google Drive</strong> → clic derecho → "Obtener enlace" → acceso público → pega el enlace en la columna <code>foto</code>.
+        <br><br>
+        <a class="sheets-link" href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQmR-Vtdbe1sg2NoIf8ht5_YE1gNbc7kLwoKhfiVpHzJI0xXE77pfQnay9I7F8irMcYvLODo-8BCU5_/pub?gid=0&single=true&output=csv" target="_blank" rel="noopener">
+          📊 Abrir mi Google Sheets
+        </a>
+      </div>
+    </div>
+    <div class="wa-bar">
+      <label>📱 Tu número de WhatsApp:</label>
+      <input type="text" id="wa-num" placeholder="+507 6000-0000">
+      <button class="wa-save-btn" onclick="saveWA()">Guardar</button>
+      <span id="wa-saved">✓ Número guardado</span>
+    </div>
+  </div>
+</div>
+
+<section class="pay-sec" id="pago">
+  <h2>¿Cómo se paga?</h2>
+  <p>Coordinamos todo con amor por WhatsApp.<br>Aceptamos las siguientes formas de pago:</p>
+  <div class="pgrid">
+    <div class="pcard2"><div class="ic">💳</div><h4>Transferencia</h4><p>Nequi, Yappy, banco</p></div>
+    <div class="pcard2"><div class="ic">💵</div><h4>Efectivo</h4><p>Punto de encuentro seguro</p></div>
+    <div class="pcard2"><div class="ic">📦</div><h4>Contra entrega</h4><p>Consulta disponibilidad</p></div>
+    <div class="pcard2"><div class="ic">💬</div><h4>Consignación</h4><p>Acuerdo previo por WhatsApp</p></div>
+  </div>
+</section>
+
+<footer>Hecho con 🌸 para <span>Ajiminis</span> &nbsp;|&nbsp; Todos los derechos reservados</footer>
+
+<div class="modal-wrap" id="modal" onclick="closeMW(event)">
+  <div class="modal">
+    <button class="mclose" onclick="closeMD()">✕</button>
+    <div class="m-imgarea" id="m-img"></div>
+    <div class="mbody">
+      <h2 id="m-tit"></h2>
+      <div class="mprice" id="m-pre"></div>
+      <div class="drow"><span class="dlbl">Color</span><span class="dval" id="m-col"></span></div>
+      <div class="drow"><span class="dlbl">Talla</span><span class="dval" id="m-tal"></span></div>
+      <div class="drow"><span class="dlbl">Condición</span><span class="dval" id="m-con"></span></div>
+      <p class="mdesc" id="m-det"></p>
+      <a class="wa-btn" id="wa-link" href="#" target="_blank" rel="noopener">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Quiero esta prenda 🌸
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="login-overlay" onclick="closeLW(event)">
+  <div class="login-box">
+    <h3>Acceso admin</h3>
+    <p>Ingresa tus credenciales para gestionar la tienda</p>
+    <input type="text" id="l-user" placeholder="Usuario" onkeydown="if(event.key==='Enter')document.getElementById('l-pass').focus()">
+    <input type="password" id="l-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')tryLogin()">
+    <span class="login-err" id="login-err">Usuario o contraseña incorrectos</span>
+    <button class="login-submit" onclick="tryLogin()">Entrar al panel admin</button>
+    <button class="login-cancel" onclick="closeLogin()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+  // ================================================
+  // CONFIGURACIÓN — edita estos valores
+  // ================================================
+  const ADMIN_USER = 'ajiminis';
+  const ADMIN_PASS = 'rosa2024';
+  const SHEETS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmR-Vtdbe1sg2NoIf8ht5_YE1gNbc7kLwoKhfiVpHzJI0xXE77pfQnay9I7F8irMcYvLODo-8BCU5_/pub?gid=0&single=true&output=csv';
+  // Pon aquí tu número con código de país, sin espacios ni guiones
+  let waNumber = '+50760000000';
+  // ================================================
+
+  let isAdmin  = false;
+  let products = [];
+
+  async function loadProducts() {
+    const content = document.getElementById('catalog-content');
+    content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando prendas...</div>';
+    document.getElementById('count-pill').textContent = 'Cargando...';
+    try {
+      const proxy = 'https://api.allorigins.win/raw?url=';
+      const res   = await fetch(proxy + encodeURIComponent(SHEETS_CSV));
+      if (!res.ok) throw new Error('Error al conectar');
+      const csv   = await res.text();
+      products    = parseCSV(csv);
+      renderCards();
+    } catch(e) {
+      content.innerHTML = `<div class="error-msg">⚠️ No se pudieron cargar las prendas. Verifica que tu Google Sheets esté publicado correctamente.<br><small>${e.message}</small></div>`;
+      document.getElementById('count-pill').textContent = '0 prendas';
+    }
+  }
+
+  function parseCSV(csv) {
+    const lines = csv.trim().split('\n');
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const vals = splitCSVLine(lines[i]);
+      if (vals.every(v => !v.trim())) continue;
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = (vals[idx]||'').trim().replace(/^"|"$/g,''); });
+      if (!obj.titulo) continue;
+      obj.id = i;
+      obj.badgeClass = (obj.badge||'').toLowerCase().includes('usad') ? 'used' : '';
+      obj.badge = obj.badge || 'Nueva';
+      if (obj.foto && obj.foto.includes('drive.google.com')) {
+        const m = obj.foto.match(/\/d\/([^\/\?]+)/);
+        if (m) obj.foto = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400`;
+      }
+      rows.push(obj);
+    }
+    return rows;
+  }
+
+  function splitCSVLine(line) {
+    const res = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { res.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    res.push(cur);
+    return res;
+  }
+
+  function renderCards() {
+    const content = document.getElementById('catalog-content');
+    if (!products.length) {
+      content.innerHTML = '<div class="error-msg">No hay prendas en el catálogo aún. Agrega filas en tu Google Sheets.</div>';
+      document.getElementById('count-pill').textContent = '0 prendas';
+      return;
+    }
+    content.innerHTML = `
+      <div class="cw">
+        <button class="cbtn L" onclick="cscroll(-1)">‹</button>
+        <div class="ctrack" id="track"></div>
+        <button class="cbtn R" onclick="cscroll(1)">›</button>
+      </div>`;
+    const tr = document.getElementById('track');
+    products.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'pcard';
+      const imgC = p.foto
+        ? `<img class="pcard-img" src="${p.foto}" alt="${p.titulo}" onerror="this.outerHTML='<div class=\\'pph\\'><span class=\\'pph-emoji\\'>🌸</span><span>Sin foto</span></div>'">`
+        : `<div class="pph"><span class="pph-emoji">🌸</span><span>Ver prenda</span></div>`;
+      const delBtn = isAdmin
+        ? `<button class="pdel" style="display:block" onclick="event.stopPropagation();delProduct(${p.id})">🗑 Ocultar prenda</button>`
+        : '';
+      card.innerHTML = `
+        <span class="pbadge${p.badgeClass?' '+p.badgeClass:''}">${p.badge}</span>
+        ${imgC}
+        <div class="pbody">
+          <div class="ptitle">${p.titulo}</div>
+          <div class="pmeta">${p.color||'—'} · Talla ${p.talla||'—'}</div>
+          <div class="pprice">${p.precio||'Consultar'}</div>
+          <button class="pbtn" onclick="openModal(${p.id})">Ver detalles 🌸</button>
+          ${delBtn}
+        </div>`;
+      tr.appendChild(card);
+    });
+    document.getElementById('count-pill').textContent = products.length + ' prenda' + (products.length!==1?'s':'');
+  }
+
+  function delProduct(id) {
+    if (!confirm('¿Ocultar esta prenda? (Para eliminarla para siempre, bórrala del Google Sheets y recarga)')) return;
+    products = products.filter(p => p.id !== id);
+    renderCards();
+  }
+
+  function cscroll(d) {
+    const t = document.getElementById('track');
+    if (t) t.scrollBy({left: d*250, behavior:'smooth'});
+  }
+
+  function openModal(id) {
+    const p = products.find(x => x.id===id); if (!p) return;
+    document.getElementById('m-tit').textContent = p.titulo;
+    document.getElementById('m-pre').textContent = p.precio||'Consultar';
+    document.getElementById('m-col').textContent = p.color||'—';
+    document.getElementById('m-tal').textContent = p.talla||'—';
+    document.getElementById('m-con').textContent = p.condicion||'—';
+    document.getElementById('m-det').textContent = p.detalles||'';
+    const ia = document.getElementById('m-img');
+    ia.innerHTML = p.foto ? `<img src="${p.foto}" alt="${p.titulo}" onerror="this.parentElement.innerHTML='🌸'">` : '🌸';
+    const msg = encodeURIComponent(`Hola Ajiminis! 🌸 Me interesa: *${p.titulo}* (${p.color||''}, Talla ${p.talla||''}) - ${p.precio||''}. ¿Sigue disponible?`);
+    document.getElementById('wa-link').href = `https://wa.me/${waNumber.replace(/\D/g,'')}?text=${msg}`;
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMW(e) { if (e.target===document.getElementById('modal')) closeMD(); }
+  function closeMD() { document.getElementById('modal').classList.remove('open'); document.body.style.overflow=''; }
+
+  function openLogin() {
+    document.getElementById('login-err').style.display='none';
+    document.getElementById('l-user').value='';
+    document.getElementById('l-pass').value='';
+    document.getElementById('login-overlay').classList.add('open');
+    document.body.style.overflow='hidden';
+    setTimeout(()=>document.getElementById('l-user').focus(),80);
+  }
+  function closeLogin() { document.getElementById('login-overlay').classList.remove('open'); document.body.style.overflow=''; }
+  function closeLW(e) { if (e.target===document.getElementById('login-overlay')) closeLogin(); }
+
+  function tryLogin() {
+    const u = document.getElementById('l-user').value.trim();
+    const p = document.getElementById('l-pass').value;
+    if (u===ADMIN_USER && p===ADMIN_PASS) {
+      isAdmin = true;
+      closeLogin();
+      document.getElementById('admin-badge').style.display='inline-flex';
+      document.getElementById('logout-btn').style.display='inline-flex';
+      document.getElementById('admin-trigger').style.display='none';
+      document.getElementById('nav-admin-li').style.display='inline';
+      document.getElementById('admin-form-wrap').style.display='block';
+      renderCards();
+      setTimeout(()=>document.getElementById('admin-panel').scrollIntoView({behavior:'smooth',block:'start'}),200);
+    } else {
+      document.getElementById('login-err').style.display='block';
+    }
+  }
+
+  function logout() {
+    isAdmin = false;
+    document.getElementById('admin-badge').style.display='none';
+    document.getElementById('logout-btn').style.display='none';
+    document.getElementById('admin-trigger').style.display='inline-block';
+    document.getElementById('nav-admin-li').style.display='none';
+    document.getElementById('admin-form-wrap').style.display='none';
+    renderCards();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function saveWA() {
+    const v = document.getElementById('wa-num').value.trim();
+    if (!v) return;
+    waNumber = v;
+    const ok = document.getElementById('wa-saved');
+    ok.style.display='inline';
+    setTimeout(()=>ok.style.display='none',2800);
+  }
+
+  function openWA(msg) {
+    window.open(`https://wa.me/${waNumber.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+  }
+
+  document.addEventListener('keydown', e => { if(e.key==='Escape'){closeMD();closeLogin();} });
+
+  loadProducts();
+</script>
+</body>
+</html>
