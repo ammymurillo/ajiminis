@@ -279,8 +279,7 @@ footer span{color:var(--rose)}
     content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando prendas...</div>';
     document.getElementById('count-pill').textContent = 'Cargando...';
     try {
-      const proxy = 'https://api.allorigins.win/raw?url=';
-      const res   = await fetch(proxy + encodeURIComponent(SHEETS_CSV));
+      const res = await fetch(SHEETS_CSV);
       if (!res.ok) throw new Error('Error al conectar');
       const csv   = await res.text();
       products    = parseCSV(csv);
